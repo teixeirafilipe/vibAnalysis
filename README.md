@@ -31,8 +31,8 @@ vibrational motions and displacements along internal coordinates.
 ## System Requirements
 **vibAnalysis** is written in Python 3, and should work in any modern system. Its
 only requirements are:
-** [Numpy](http://www.numpy.org/)
-** [Scikit-learn](http://scikit-learn.org/stable/) 
+* [Numpy](http://www.numpy.org/)
+* [Scikit-learn](http://scikit-learn.org/stable/) 
 
 **vibAnalysis** has the ability to export the animation of vibrational modes and
 displacements along internal coordinates using the xyz format which can be
