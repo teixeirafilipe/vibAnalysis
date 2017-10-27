@@ -27,6 +27,8 @@ Opts['delta']=0.2
 Opts['tol']=0.2
 Opts['doMW']=True
 Opts['doPure']=False
+Opts['pureEngine']='Imp'
+Opts['doAutoSel']=False
 Opts['doICC']=False
 Opts['doNMP']=False
 Opts['doLD']=False
@@ -45,7 +47,7 @@ Symbols=['h','he','li','be','b','c','n','o','f','ne','na','mg','al','si','p','s'
 
 Masses=[1.007825, 4.002602, 6.94, 9.0121831, 10.81, 12.0000, 14.007, 15.9949159, 18.998403163, 20.1797, 22.98976928, 24.305, 26.9815385, 28.085, 30.973761998, 32.06, 35.45, 39.948, 39.0983, 40.078, 44.955908, 47.867, 50.9415, 51.9961, 54.938044, 55.845, 58.933194, 58.6934, 63.546, 65.38, 69.723, 72.63, 74.921595, 78.971, 79.904, 83.798, 85.4678, 87.62, 88.90584, 91.224, 92.90637, 95.95, 97, 101.07, 102.9055, 106.42, 107.8682, 112.414, 114.818, 118.71, 121.76, 127.6, 126.90447, 131.293, 132.90545196, 137.327, 138.90547, 140.116, 140.90766, 144.242, 145, 150.36, 151.964, 157.25, 158.92535, 162.5, 164.93033, 167.259, 168.93422, 173.054, 174.9668, 178.49, 180.94788, 183.84, 186.207, 190.23, 192.217, 195.084, 196.966569, 200.592, 204.38, 207.2, 208.9804]
 
-Raddi=[ 0.5, 0.3, 1.7, 1.1, 0.9, 0.7, 0.6, 0.6, 0.5, 0.4, 1.9, 1.5, 1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 2.4, 1.9, 1.8, 1.8, 1.7, 1.7, 1.6, 1.6, 1.5, 1.5, 1.5, 1.4, 1.4, 1.3, 1.1, 1.0, 0.9, 0.9, 2.7, 2.2, 2.1, 2.1, 2.0, 1.9, 1.8, 1.8, 1.7, 1.7, 1.7, 1.6, 1.6, 1.5, 1.3, 1.2, 1.2, 1.1, 3.0, 2.5, 2.0, 2.0, 2.5, 2.1, 2.1, 2.4, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.2, 2.2, 2.2, 2.1, 2.0, 1.9, 1.9, 1.9, 1.8, 1.8, 1.7, 1.7, 1.6, 1.5, 1.4]
+Raddi=[ 0.5, 0.3, 1.7, 1.1, 0.9, 0.7, 0.6, 0.6, 0.6, 0.4, 1.9, 1.5, 1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 2.4, 1.9, 1.8, 1.8, 1.7, 1.7, 1.6, 1.6, 1.5, 1.5, 1.5, 1.4, 1.4, 1.3, 1.1, 1.0, 0.9, 0.9, 2.7, 2.2, 2.1, 2.1, 2.0, 1.9, 1.8, 1.8, 1.7, 1.7, 1.7, 1.6, 1.6, 1.5, 1.3, 1.2, 1.2, 1.1, 3.0, 2.5, 2.0, 2.0, 2.5, 2.1, 2.1, 2.4, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.2, 2.2, 2.2, 2.1, 2.0, 1.9, 1.9, 1.9, 1.8, 1.8, 1.7, 1.7, 1.6, 1.5, 1.4]
 
 ## Support Functions ##
 
@@ -379,11 +381,20 @@ def makeS(symb,geo):
 		r21=r21/np.linalg.norm(r21)
 		phi0=np.arccos(np.dot(r01,r21))
 		anglesA.append(phi0*(180.0/np.pi))
-		#for j in angles[i]:
+		for j in [angles[i][1]]:
+			for k in range(3):
+				gp=np.copy(geo)
+				gp[j,k]+=delta*(np.cos(phi0))**2
+				r01p=gp[angles[i][0]]-gp[angles[i][1]]
+				r21p=gp[angles[i][2]]-gp[angles[i][1]]
+				r01p=r01p/np.linalg.norm(r01p)
+				r21p=r21p/np.linalg.norm(r21p)
+				phi1=np.arccos(np.dot(r01p,r21p))
+				sb[j,k]=(phi1-phi0)/delta
 		for j in [angles[i][0],angles[i][2]]:
 			for k in range(3):
 				gp=np.copy(geo)
-				gp[j,k]+=delta
+				gp[j,k]+=delta*(np.sin(phi0))**2
 				r01p=gp[angles[i][0]]-gp[angles[i][1]]
 				r21p=gp[angles[i][2]]-gp[angles[i][1]]
 				r01p=r01p/np.linalg.norm(r01p)
@@ -414,7 +425,7 @@ def makeS(symb,geo):
 			teta0=np.pi-np.arccos(atmp)
 		outsA.append(np.rad2deg(teta0))
 		#for j in range(np.size(geo,0)):
-		for j in [a4]:
+		for j in [a4]: # a4 should define the angle between bond and plane
 			for k in range(3):
 				gp=np.copy(geo)
 				gp[j,k]+=delta
@@ -430,13 +441,11 @@ def makeS(symb,geo):
 					teta1=np.pi-np.arccos(-1.0)
 				else:
 					teta1=np.pi-np.arccos(atmp)
-				#TODO account for rotation above 360
 				sb[j,k]=(teta1-teta0)/delta
 		S[:,n]=np.reshape(sb,(1,np.size(sb)))
 		n+=1
 	# calc S for torsions
 	for i in range(len(dihedrals)):
-		coords.append([4]+dihedrals[i])
 		sb=np.zeros(np.shape(geo))
 		a1=dihedrals[i][0]
 		a2=dihedrals[i][1]
@@ -450,6 +459,10 @@ def makeS(symb,geo):
 		r3 /= np.linalg.norm(r3)
 		n1=np.cross(r1,r2)
 		n2=np.cross(r3,r2)
+		if(np.linalg.norm(n1)<1.0e-2):
+			continue
+		elif(np.linalg.norm(n2)<1.0e-2):
+			continue
 		n1 /= np.linalg.norm(n1)
 		n2 /= np.linalg.norm(n2)
 		atmp=np.dot(n1,n2)/(np.linalg.norm(n1)*np.linalg.norm(n2))
@@ -459,8 +472,7 @@ def makeS(symb,geo):
 			teta0=np.arccos(-1.0)
 		else:
 			teta0=np.arccos(atmp)
-		dihedralsA.append(np.rad2deg(teta0))
-		for j in [a1,a4]: # only these should have significant movement!
+		for j in [a1,a4]: # these two define the angle between the two planes
 			for k in range(3):
 				gp=np.copy(geo)
 				gp[j,k]+= delta
@@ -481,11 +493,13 @@ def makeS(symb,geo):
 					teta1=np.arccos(-1.0)
 				else:
 					teta1=np.arccos(atmp)
-				#TODO account for rotation above 360
 				sb[j,k]=(teta1-teta0)/delta
+		coords.append([4]+dihedrals[i])
+		dihedralsA.append(np.rad2deg(teta0))
 		S[:,n]=np.reshape(sb,(1,np.size(sb)))
 		n+=1
 	#normalise S
+	S=S[:,0:n]
 	for i in range(n):
 		S[:,i]=S[:,i]/np.linalg.norm(S[:,i])
 	return(coords,S)
@@ -562,10 +576,81 @@ def punchLIC(o,icl,symbs,geo):
 		o.write(" %4d %25s %8.3f\n"%(i+1,desc,val))
 	o.write("\n")
 
-def purify(of,S,il,norig,naim,symb):
+## Core Functions ##
+
+def VMPCore(ics,M,S,freqs):
+	""" Performs a simple projection of the normal modes in M
+	over the internal coordinates in S.
+	Inputs:
+	- ics: list of internal coordinates
+	- M: displacement matrix for the vibrational modes
+	- S: Wilson's S matrix for the internal coords
+	- freqs: list of vibrational frequencies for pretty output
+	Output:
+	- o : matrix with projection of each mode (cols) over each IC (rows)
+	"""
+	nfreqs=len(freqs)
+	nics=len(ics)
+	o=np.zeros((nics,nfreqs))
+	for i in range(nfreqs):
+		for j in range(nics):
+			o[j,i]=np.dot(S[:,j],modes[:,i])/np.linalg.norm(S[:,j])
+	return(o)
+
+def VMLDCore(ics,M,S,freqs):
+	""" Performs a Linear decomposition normal modes in M
+	over the internal coordinates in S, using Bayesian Ridge Regression
+	with Automatic Relevance Determination.
+	Inputs:
+	- ics: list of internal coordinates
+	- M: displacement matrix for the vibrational modes
+	- S: Wilson's S matrix for the internal coords
+	- freqs: list of vibrational frequencies for pretty output
+	Output:
+	- o : matrix with projection of each mode (cols) over each IC (rows)
+	"""
+	nfreqs=len(freqs)
+	nics=len(ics)
+	o=np.zeros((nics,nfreqs))
+	ard=sklm.LinearRegression()
+	for i in range(nfreqs):
+		displacement=modes[:,i]
+		displacement /= np.linalg.norm(displacement)
+		ard.fit(S,displacement)
+		for j in range(nics):
+			o[j,i]=ard.coef_[j]
+	return(o)
+
+def VMARDCore(ics,M,S,freqs):
+	""" Performs a linear decomposition normal modes in M
+	over the internal coordinates in S, using Bayesian Ridge Regression
+	with Automatic Relevance Determination.
+	Inputs:
+	- ics: list of internal coordinates
+	- M: displacement matrix for the vibrational modes
+	- S: Wilson's S matrix for the internal coords
+	- freqs: list of vibrational frequencies for pretty output
+	- ir: list of IR intensities for pretty output
+	Output:
+	- o : matrix with projection of each mode (cols) over each IC (rows)
+	"""
+	nfreqs=len(freqs)
+	nics=len(ics)
+	o=np.zeros((nics,nfreqs))
+	ard=sklm.ARDRegression(compute_score=True,n_iter=3500)
+	for i in range(nfreqs):
+		displacement=modes[:,i]
+		displacement /= np.linalg.norm(displacement)
+		ard.fit(S,displacement)
+		for j in range(nics):
+			o[j,i]=ard.coef_[j]
+	return(o)
+
+def purifyCorrelation(of,S,il,naim,symb,modes,freqs):
 	"""Removes the most correlated cols of S until naim cols"""
 	o=S.copy()
 	ol=il.copy()
+	norig=np.shape(S)[1]
 	nout=0
 	of.write("\n\nPurifying S based on maximum correlation...\n")
 	while(nout<(norig-naim)):
@@ -580,6 +665,94 @@ def purify(of,S,il,norig,naim,symb):
 			t.append(ol[i].copy())
 		ol=t.copy()
 		nout += 1
+	return(o,ol)
+
+def purifyDistil(of,S,il,naim,symb,modes,freqs):
+	o=S.copy()
+	ol=il.copy()
+	nfreqs=len(freqs)
+	ncurrent=np.shape(o)[1]
+	of.write("\n\nPurifying S from the least important IC's...\n")
+	while(ncurrent>naim):
+		imp=np.zeros((ncurrent,nfreqs))
+		if(Opts['pureEngine']=='VMP'):
+			imp=VMPCore(ol,modes,o,freqs)
+		elif(Opts['pureEngine']=='VMLD'):
+			imp=VMLDCore(ol,modes,o,freqs)
+		elif(Opts['pureEngine']=='VMARD'):
+			imp=VMARDCore(ol,modes,o,freqs)
+		else:
+			imp=VMPCore(ol,modes,o,freqs)
+		imp=np.abs(imp)
+		# normalize imp over cols
+		for i in range(nfreqs):
+			imp[:,i] /= np.linalg.norm(imp[:,i])
+		imax=-1
+		minval=1000000.0
+		for i in range(len(ol)):
+			if(np.sum(imp[i,:])<minval):
+				imin=i
+				minval=np.sum(imp[i,:])
+		idx=list(range(np.shape(o)[1]))
+		rem=idx.pop(imin) #remove most correlated var
+		of.write("Removed %s\n"%(modeStr(ol[rem],symb)))
+		o=o[:,idx]
+		t=[]
+		for i in idx:
+			t.append(ol[i].copy())
+		ol=t.copy()
+		ncurrent=np.shape(o)[1]
+	return(o,ol)
+
+def icAutoSel(of,S,il,naim,symb,modes,freqs):
+	"""Alternative selection of IC's, selecting the most important for each vib"""
+	o=S.copy()
+	ol=il.copy()
+	nfreqs=len(freqs)
+	ncurrent=np.shape(o)[1]
+	of.write("\n\nSelectig the most important IC's")
+	if(Opts['doARD']):
+		of.write(" using VMARD...\n")
+		imp=np.abs(VMARDCore(ol,modes,o,freqs))
+	elif(Opts['doNMP']):
+		of.write(" using VMP...\n")
+		imp=np.abs(VMPCore(ol,modes,o,freqs))
+	elif(Opts['doLD']):
+		of.write(" using VMLD...\n")
+		imp=np.abs(VMLDCore(ol,modes,o,freqs))
+	else:
+		of.write(" using VMP (default)...\n")
+		imp=np.abs(VMPCore(ol,modes,o,freqs))
+	pool=[]
+	# imp is normalized over freqs
+	for i in range(nfreqs):
+		imp[:,i] /= np.linalg.norm(imp[:,i])
+		#search for the most important contribution that is not already in the pool
+		jbest=-1
+		best=-10.0
+		for j in range(ncurrent):
+			if((imp[j,i]>best)and(j not in pool)):
+				jbest=j
+				best=imp[j,i]
+		pool.append(jbest)
+		of.write("Selected %s\n"%(modeStr(ol[jbest],symb)))
+	pool.sort()
+	o=o[:,pool]
+	t=[]
+	for i in pool:
+		t.append(ol[i].copy())
+	ol=t.copy()
+	ncurrent=np.shape(o)[1]
+	return(o,ol)
+
+def purify(of,S,il,naim,symb,modes,freqs):
+	"""Driver for the purify routines"""
+	if(Opts['pureEngine']=='Corr'):
+		o,ol=purifyCorrelation(of,S,il,naim,symb)
+	elif(Opts['pureEngine']=='Iter'):
+		o,ol=purifyDistil(of,S,il,naim,symb,modes,freqs)
+	else:
+		o,ol=purifyCorrelation(of,S,il,naim,symb,modes,freqs)
 	return(o,ol)
 
 def vw(X,Y):
@@ -885,6 +1058,7 @@ Options:
  --mw         Use mass-weighted displacements (default).
  --rawd       Don't use mass-weighted displacements.
  --pure       Purify internal coordinates.
+ --autosel    Automatic selection of internal coordinates.
  --allic      Don't purify internal coordinates (default)
  --cut XX     Set the cutoff for presenting contributions:
               'auto' - Automatic selection (default)
@@ -927,6 +1101,10 @@ Options:
 			inic=False
 			invm=False
 			Opts['doPure']=True
+		elif(arg[n]=='--autosel'):
+			inic=False
+			invm=False
+			Opts['doAutoSel']=True
 		elif(arg[n]=='--allic'):
 			inic=False
 			invm=False
@@ -1012,6 +1190,10 @@ Options:
 			Opts['aniMode'].append(int(arg[n]))
 		n += 1
 	ifn=sys.argv[-1]
+	#Check for incompatibilities
+	if(Opts['doAutoSel'] and Opts['doPure']):
+		print("--autosel and --purify are incompatible: autosel takes precedence!")
+		Opts['doPure']=False
 	#Create name/basename for output file
 	if(Opts['input']=='OrcaHess'):
 		ofn=ifn[:-5]
@@ -1020,7 +1202,7 @@ Options:
 	of=open(ofn+'.nma','w')
 	of.write("""###############################################################
 #                                                             #
-#   vibAnalysis - version 1.0 alpha                           #
+#   vibAnalysis - version 1.01 alpha                          #
 #   A set of tools to analyse vibrational modes in terms of   #
 #   localized internal coordinates.                           #
 #                                                             #
@@ -1042,10 +1224,6 @@ Options:
 	#of.write("Internal Coordinates Expected:  %d\n"%(len(freqs)))
 	#if(len(ic)>len(freqs)):
 	#	of.write("Expect some redundancy in the internal coordinate decomposition!\n")
-	## If pure, purify IC
-	if(Opts['doPure']):
-		S,ic=purify(of,S,ic,len(ic),len(freqs),symbols)
-	punchLIC(of,ic,symbols,geometry)
 	## If MW, mass-weight the normal modes
 	if(Opts['doMW']):
 		of.write("\nMass-weighting the atomic displacements...\n\n")
@@ -1058,6 +1236,14 @@ Options:
 		for i in range(len(freqs)):
 			modes[:,i]=modes[:,i]*massA
 			modes[:,i] /= np.linalg.norm(modes[:,i])
+	## If pure, purify IC ...
+	if(Opts['doPure']):
+		S,ic=purify(of,S,ic,len(freqs),symbols,modes,freqs)
+	# ... or select the most valuable ones
+	if(Opts['doAutoSel']):
+		S,ic=icAutoSel(of,S,ic,len(freqs),symbols,modes,freqs)
+	# print list of internal coordinates
+	punchLIC(of,ic,symbols,geometry)
 	## Animate modes?
 	if(len(Opts['aniMode'])>0):
 		of.write("\n")
