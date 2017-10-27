@@ -63,7 +63,8 @@ Options:
  --mw         Use mass-weighted displacements (default).
  --rawd       Don't use mass-weighted displacements.
  --pure       Purify internal coordinates.
- --allic      Don't purify internal coordinates (default)
+ --autosel    Automatic selection of internal coordinates.  
+ --allic      Don't purify internal coordinates (default)
  --cut XX     Set the cutoff for presenting contributions:
               'auto' - Automatic selection (default)
               'all'  - All contributions are listed.
