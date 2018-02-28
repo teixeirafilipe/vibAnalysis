@@ -63,6 +63,8 @@ Options:
  --mw         Use mass-weighted displacements (default).
  --rawd       Don't use mass-weighted displacements.
  --pure       Purify internal coordinates.
+ --noouts     Don not generate out-of-plane internal coordinates
+ --notors     Don not generate torsion internal coordinates
  --autosel    Automatic selection of internal coordinates.  
  --allic      Don't purify internal coordinates (default)
  --cut XX     Set the cutoff for presenting contributions:
