@@ -3,7 +3,7 @@
 
 ##########################################################################
 #                                                                        #
-# Program: va.py   Version 1.0              Date: 05/08/2017             #
+# Program: va.py   Version 1.1              Date: 05/08/2017             #
 #                                                                        #
 # A varied set of tools to analyse vibrational modes in terms of         #
 # localized internal coordinates.                                        #
@@ -25,6 +25,8 @@ Opts['cut']='auto'
 Opts['cutval']=0.1
 Opts['delta']=0.2
 Opts['tol']=0.2
+Opts['doOuts']=True
+Opts['doTors']=True
 Opts['doMW']=True
 Opts['doPure']=False
 Opts['pureEngine']='Imp'
@@ -47,7 +49,7 @@ Symbols=['h','he','li','be','b','c','n','o','f','ne','na','mg','al','si','p','s'
 
 Masses=[1.007825, 4.002602, 6.94, 9.0121831, 10.81, 12.0000, 14.007, 15.9949159, 18.998403163, 20.1797, 22.98976928, 24.305, 26.9815385, 28.085, 30.973761998, 32.06, 35.45, 39.948, 39.0983, 40.078, 44.955908, 47.867, 50.9415, 51.9961, 54.938044, 55.845, 58.933194, 58.6934, 63.546, 65.38, 69.723, 72.63, 74.921595, 78.971, 79.904, 83.798, 85.4678, 87.62, 88.90584, 91.224, 92.90637, 95.95, 97, 101.07, 102.9055, 106.42, 107.8682, 112.414, 114.818, 118.71, 121.76, 127.6, 126.90447, 131.293, 132.90545196, 137.327, 138.90547, 140.116, 140.90766, 144.242, 145, 150.36, 151.964, 157.25, 158.92535, 162.5, 164.93033, 167.259, 168.93422, 173.054, 174.9668, 178.49, 180.94788, 183.84, 186.207, 190.23, 192.217, 195.084, 196.966569, 200.592, 204.38, 207.2, 208.9804]
 
-Raddi=[ 0.5, 0.3, 1.7, 1.1, 0.9, 0.7, 0.6, 0.6, 0.6, 0.4, 1.9, 1.5, 1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 2.4, 1.9, 1.8, 1.8, 1.7, 1.7, 1.6, 1.6, 1.5, 1.5, 1.5, 1.4, 1.4, 1.3, 1.1, 1.0, 0.9, 0.9, 2.7, 2.2, 2.1, 2.1, 2.0, 1.9, 1.8, 1.8, 1.7, 1.7, 1.7, 1.6, 1.6, 1.5, 1.3, 1.2, 1.2, 1.1, 3.0, 2.5, 2.0, 2.0, 2.5, 2.1, 2.1, 2.4, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.2, 2.2, 2.2, 2.1, 2.0, 1.9, 1.9, 1.9, 1.8, 1.8, 1.7, 1.7, 1.6, 1.5, 1.4]
+Raddi=[ 0.5, 0.3, 1.7, 1.1, 0.9, 0.7, 0.6, 0.6, 0.5, 0.4, 1.9, 1.5, 1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 2.4, 1.9, 1.8, 1.8, 1.7, 1.7, 1.6, 1.6, 1.5, 1.5, 1.5, 1.4, 1.4, 1.3, 1.1, 1.0, 0.9, 0.9, 2.7, 2.2, 2.1, 2.1, 2.0, 1.9, 1.8, 1.8, 1.7, 1.7, 1.7, 1.6, 1.6, 1.5, 1.3, 1.2, 1.2, 1.1, 3.0, 2.5, 2.0, 2.0, 2.5, 2.1, 2.1, 2.4, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.2, 2.2, 2.2, 2.1, 2.0, 1.9, 1.9, 1.9, 1.8, 1.8, 1.7, 1.7, 1.6, 1.5, 1.4]
 
 ## Support Functions ##
 
@@ -283,10 +285,34 @@ def readG09out(ifn):
 		modes[:,i]=modes[:,i]/np.linalg.norm(modes[:,i])
 	return(symbols,geo,mass,freqs,modes,irInt,raInt)
 
+def readUserIC(fn):
+	"""Reads additional internal coordinates defined by the user"""
+	o=[]
+	f=open(fn,'r')
+	udata=f.readlines()
+	f.close()
+	for line in udata:
+		if('#' in line):
+			continue
+		elif(line.strip()==''):
+			continue
+		else:
+			l=line.split()
+			if(l[0].upper()=='B'):
+				o.append([1,int(l[1])-1,int(l[2])-1])
+			elif(l[0].upper()=='A'):
+				o.append([2,int(l[1])-1,int(l[2])-1,int(l[3])-1])
+			elif(l[0].upper()=='O'):
+				o.append([3,int(l[1])-1,int(l[2])-1,int(l[3])-1,int(l[4])-1])
+			elif(l[0].upper()=='T'):
+				o.append([4,int(l[1])-1,int(l[2])-1,int(l[3])-1,int(l[4])-1])
+			else:
+				continue
+	return(o)
 
-def makeS(symb,geo):
+def makeS(symb,geo,useric=[]):
 	"""Automatically identifies internal coordinates using 
-	connectivity dedued from covalent radii and generates
+	connectivity deduced from covalent radii and generates
 	Wilson's S matrix for the specified geometry"""
 	## Parameters from Global Opts
 	delta=Opts['delta']
@@ -295,6 +321,13 @@ def makeS(symb,geo):
 	natoms=np.shape(geo)[0]
 	ageo=np.reshape(geo.copy(),(np.size(geo),1))
 	# temporary lists
+	valence=[] #store number of bonds for each atom
+	centred=[] #store number angles this atoms is the centre of
+	coordination=[]
+	for i in range(natoms):
+		coordination.append([])
+		valence.append(0)
+		centred.append(0)
 	bonds=[]
 	angles=[]
 	dihedrals=[]
@@ -303,14 +336,33 @@ def makeS(symb,geo):
 	dihedralsA=[]
 	outs=[]
 	outsA=[]
+	# add user-defined ICs
+	if(useric!=[]):
+		for i in range(len(useric)):
+			if(useric[i][0]==1):
+				bonds.append(useric[i][1:])
+				valence[useric[i][1]] += 1
+				valence[useric[i][2]] += 1
+				coordination[useric[i][1]].append(useric[i][2])
+				coordination[useric[i][2]].append(useric[i][1])
+			elif(useric[i][0]==2):
+				angles.append(useric[i][1:])
+			elif(useric[i][0]==3):
+				outs.append(useric[i][1:])
+			elif(useric[i][0]==4):
+				dihedrals.append(useric[i][1:])
 	# search for bonds
 	for i in range(np.size(geo,0)):
 		r1=Raddi[Symbols.index(symb[i])]
 		for j in range(i+1,np.size(geo,0)):
 			rl=(1.0+tol)*(r1+Raddi[Symbols.index(symb[j])])
 			#print("%d %d %f %f"%(i,j,rl,np.linalg.norm(geo[i]-geo[j])))
-			if (np.linalg.norm(geo[i]-geo[j])<rl):
+			if ((np.linalg.norm(geo[i]-geo[j])<rl)and([i,j] not in bonds)):
 				bonds.append([i,j])
+				valence[i] += 1
+				valence[j] += 1
+				coordination[i].append(j)
+				coordination[j].append(i)
 	#find triatomic angles between atomic bonds
 	for i in range(len(bonds)):
 		set1=set(bonds[i])
@@ -318,7 +370,16 @@ def makeS(symb,geo):
 			set2=set(bonds[j])
 			if (len(set1&set2)==1):
 				tmp=list(set1^set2)
-				angles.append([tmp[0],list(set1&set2)[0],tmp[1]])
+				tmp.sort()
+				common=list(set1&set2)[0]
+				candidate=[tmp[0],common,tmp[1]]
+				centred[common] += 1
+				if(Opts["doAutoSel"]):
+					if((candidate not in angles)and(centred[common]<valence[common])):
+						angles.append(candidate)
+				else:
+					if(candidate not in angles):
+						angles.append(candidate)
 	#find dihedrals (torsions) and out-of-plane (outs)
 	for i in range(len(angles)):
 		set1=set(angles[i])
@@ -327,34 +388,36 @@ def makeS(symb,geo):
 			if (len(set1&set2)==2):
 				tmp=list(set1^set2) # non-common atoms
 				tmp2=list(set1&set2)# common atoms
-				if(angles[i][1]==angles[j][1]): # out-of-plane
+				if(angles[i][1]==angles[j][1]): # out-of-plane 
 					a2=angles[i][1] #reference
-					if(angles[i][0] in tmp2):
-						a1=angles[i][0]
-						a3=min(tmp)
-						a4=max(tmp)
-					elif(angles[i][2] in tmp2):
-						a1=angles[i][2]
-						a3=min(tmp)
-						a4=max(tmp)
-					elif(angles[j][0] in tmp2):
-						a1=angles[j][0]
-						a3=min(tmp)
-						a4=max(tmp)
-					elif(angles[j][2] in tmp2):
-						a1=angles[j][2]
-						a3=min(tmp)
-						a4=max(tmp)
-					outs.append([a1,a2,a3,a4])
+					tmplst=tmp+tmp2
+					tmplst.pop(tmplst.index(a2)) #remove the common
+					tmplst.sort()
+					a1=tmplst[0]
+					a3=tmplst[1]
+					a4=tmplst[2]
+					if(Opts['doOuts']):
+						if([a1,a2,a3,a4] not in outs):
+							outs.append([a1,a2,a3,a4])
 				# now the torsions
-				elif((angles[i][1]==angles[j][0])and(angles[j][1]==angles[i][0])):
-					dihedrals.append([angles[i][2],angles[i][1],angles[j][1],angles[j][2]])
-				elif((angles[i][1]==angles[j][0])and(angles[j][1]==angles[i][2])):
-					dihedrals.append([angles[i][0],angles[i][1],angles[j][1],angles[j][2]])
-				elif((angles[i][1]==angles[j][2])and(angles[j][1]==angles[i][0])):
-					dihedrals.append([angles[i][2],angles[i][1],angles[j][1],angles[j][0]])
-				elif((angles[i][1]==angles[j][2])and(angles[j][1]==angles[i][2])):
-					dihedrals.append([angles[i][0],angles[i][1],angles[j][1],angles[j][0]])
+				else:
+					candidate=[]
+					if((angles[i][1]==angles[j][0])and(angles[j][1]==angles[i][0])):
+						candidate=[angles[i][2],angles[i][1],angles[j][1],angles[j][2]]
+					elif((angles[i][1]==angles[j][0])and(angles[j][1]==angles[i][2])):
+						candidate=[angles[i][0],angles[i][1],angles[j][1],angles[j][2]]
+					elif((angles[i][1]==angles[j][2])and(angles[j][1]==angles[i][0])):
+						candidate=[angles[i][2],angles[i][1],angles[j][1],angles[j][0]]
+					elif((angles[i][1]==angles[j][2])and(angles[j][1]==angles[i][2])):
+						candidate=[angles[i][0],angles[i][1],angles[j][1],angles[j][0]]
+					if(Opts["doAutoSel"]):
+						if((candidate!=[])and(candidate[1:]not in [h[1:] for h in dihedrals])):
+							if(Opts['doTors']):
+								dihedrals.append(candidate)
+					else:
+						if(candidate!=[]):
+							if(Opts['doTors']):
+								dihedrals.append(candidate)
 	#calc S for bonds
 	S=np.zeros((np.size(geo),len(bonds)+len(angles)+len(dihedrals)+len(outs)))
 	n=0
@@ -500,8 +563,8 @@ def makeS(symb,geo):
 		n+=1
 	#normalise S
 	S=S[:,0:n]
-	for i in range(n):
-		S[:,i]=S[:,i]/np.linalg.norm(S[:,i])
+	#for i in range(n):
+	#	S[:,i]=S[:,i]/np.linalg.norm(S[:,i])
 	return(coords,S)
 
 def modeStr(mode,symbs):
@@ -1058,8 +1121,12 @@ Options:
  --mw         Use mass-weighted displacements (default).
  --rawd       Don't use mass-weighted displacements.
  --pure       Purify internal coordinates.
+ --noouts     Don not generate out-of-plane internal coordinates
+ --notors     Don not generate torsion internal coordinates
  --autosel    Automatic selection of internal coordinates.
  --allic      Don't purify internal coordinates (default)
+ --addic FILE Read additional or user-defined internal coordinates from
+              file FILE.
  --cut XX     Set the cutoff for presenting contributions:
               'auto' - Automatic selection (default)
               'all'  - All contributions are listed.
@@ -1073,6 +1140,21 @@ Options:
               'g09'    - Gaussian09 output (log) file.
  --vm XX      Animate vibrational mode XX 
  --ic XX      Animate internal coordinate XX 
+
+ Format for additional coordinates (--addic):
+ - Dlain text file (extension not relevant, but .ic is recommended)
+ - Lines Containing a hash (#) are ignored as comments
+ - One internal coordinate per line, as a tuple of characters and numbers:
+   - First Entry: B A O, or T, for bond, angle, out-of-plane or torsion, respectively
+	 - Following entries: the indexes of the atoms involved, starting with 1.
+   - For B, you must define 2 atoms
+   - For A, you must define 3 atoms, the second being the apex of the angle
+   - For B, you must define 4 atoms, the second being the central atom
+   - For B, you must define 4 atoms, the first and last being the extreme of the torsion
+  Examples:
+    B 1 2   -> Bond between atoms 1 and 2
+    A 1 4 3 -> Angle formed betweem 4-1 and 4-3
+
 \n"""%(sys.argv[0]))
 		sys.exit(1)
 	arg=sys.argv[1:-1]
@@ -1080,6 +1162,7 @@ Options:
 	inic=False
 	invm=False
 	ofn='va.out'
+	useric=[]
 	while(n<len(arg)):
 		if(arg[n]=='--linear'):
 			inic=False
@@ -1105,10 +1188,21 @@ Options:
 			inic=False
 			invm=False
 			Opts['doAutoSel']=True
+		elif(arg[n]=='--noouts'):
+			inic=False
+			invm=False
+			Opts['doOuts']=False
+		elif(arg[n]=='--notors'):
+			inic=False
+			invm=False
+			Opts['doTors']=False
 		elif(arg[n]=='--allic'):
 			inic=False
 			invm=False
 			Opts['doPure']=False
+		elif(arg[n]=='--addic'):
+			useric=readUserIC(arg[n+1])
+			n += 1
 		elif(arg[n]=='--cut'):
 			inic=False
 			invm=False
@@ -1219,8 +1313,32 @@ Options:
 		symbols,geometry,masses,freqs,modes,IR,Raman=readG09out(ifn)
 	# Generate quasi-redundant internal coordinated
 	of.write("\nGenerating Internal Coordinates...\n")
-	ic,S=makeS(symbols,geometry)
+	ic,S=makeS(symbols,geometry,useric)
+	# normalize S
+	if(Opts['doMW']):
+	#if(False):
+		natoms=len(symbols)
+		massA=np.zeros(natoms*3)
+		for i in range(natoms):
+			massA[3*int((3*i)/3)]=masses[i]
+			massA[1+3*int((3*i)/3)]=masses[i]
+			massA[2+3*int((3*i)/3)]=masses[i]
+		for i in range(S.shape[1]):
+			S[:,i] /= np.sqrt(massA)
+			#S[:,i] /= massA
+	for i in range(S.shape[1]):
+		S[:,i] /= np.linalg.norm(S[:,i])
+	S *= Opts["delta"]
+	#for i in range(S.shape[1]):
+	#	print("IC %d: Norm = %f, Max= %f"%(i+1,np.linalg.norm(S[:,i]),np.max(np.abs(S[:,i]))))
 	of.write("Internal Coordinates Generated: %d\n"%(len(ic)))
+	# print list of internal coordinates
+	of.write("""\nThis is the list of Internal Coordinates generated for
+this run. Please use these indexes if you whish to animate
+any one of these coordinates. If you added some user-defined
+coordinates, please be sure to re-run this program with the
+same added coordinates.\n""")
+	punchLIC(of,ic,symbols,geometry)
 	#of.write("Internal Coordinates Expected:  %d\n"%(len(freqs)))
 	#if(len(ic)>len(freqs)):
 	#	of.write("Expect some redundancy in the internal coordinate decomposition!\n")
@@ -1234,16 +1352,10 @@ Options:
 			massA[1+3*int((3*i)/3)]=masses[i]
 			massA[2+3*int((3*i)/3)]=masses[i]
 		for i in range(len(freqs)):
-			modes[:,i]=modes[:,i]*massA
+			modes[:,i]=modes[:,i]*np.sqrt(massA)
 			modes[:,i] /= np.linalg.norm(modes[:,i])
-	## If pure, purify IC ...
-	if(Opts['doPure']):
-		S,ic=purify(of,S,ic,len(freqs),symbols,modes,freqs)
-	# ... or select the most valuable ones
-	if(Opts['doAutoSel']):
-		S,ic=icAutoSel(of,S,ic,len(freqs),symbols,modes,freqs)
-	# print list of internal coordinates
-	punchLIC(of,ic,symbols,geometry)
+	#for i in range(modes.shape[1]):
+	#	print("VM %d: Norm = %f, Max= %f"%(i+1,np.linalg.norm(modes[:,i]),np.max(np.abs(modes[:,i]))))
 	## Animate modes?
 	if(len(Opts['aniMode'])>0):
 		of.write("\n")
@@ -1259,6 +1371,16 @@ Options:
 			of.write("Animating internal coordinate %d to file: %s\n"%(icidx,tfn))
 			animateMode(tfn,symbols,geometry,S[:,icidx-1])
 		of.write("\n")
+	## If pure, purify IC ...
+	if(Opts['doPure']):
+		of.write("\nPurifying the set of Internal Coordinates...\n\n")
+		S,ic=purify(of,S,ic,len(freqs),symbols,modes,freqs)
+		punchLIC(of,ic,symbols,geometry)
+	# ... or select the most valuable ones
+	#if(Opts['doAutoSel']):
+	#	of.write("\nAutomatic Selection of Internal Coordinates...\n\n")
+	#	S,ic=icAutoSel(of,S,ic,len(freqs),symbols,modes,freqs)
+	#	punchLIC(of,ic,symbols,geometry)
 	## Do the analysis
 	if(Opts['doICC']):
 		ICC(of,symbols,ic,modes,S,freqs,IR,Raman)
