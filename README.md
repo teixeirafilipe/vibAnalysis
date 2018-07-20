@@ -47,39 +47,61 @@ print its help on the terminal.
 Usage: ./va.py [ Commands ] [ Options ] inputFile
 
 Commands:
- --icc        Perform Internal Coordinate Contribution analysis (default).
- --noicc      Don't perform Internal Coordinate Contribution analysis.
- --nmp        Perform Normal Mode Decomposition analysis.
- --nonmp      Don't perform Normal Mode Decomposition (default).
- --ld         Perform Normal Mode Linear Decomposition analysis.
- --nold       Don't perform Normal Mode Linear Decomposition (default).
- --ard        Perform Normal Mode ARD Decomposition analysis (default).
- --noard      Don't perform Normal Mode ARD Decomposition analysis.
+ --vmp     Perform Vibrational Mode Decomposition analysis.
+ --novmp   Don't perform Vibrational Mode Decomposition (default).
+ --vmld    Perform Vibrational Mode Linear Decomposition analysis.
+ --novmld  Don't perform Vibrational Mode Linear Decomposition (default).
+ --vmbld   Perform Vibrational Mode Bayesian Linear Decomposition analysis.
+ --novmbld Don't perform Vibrational Mode Bayesian Linear Decomposition (default).
+ --vmard   Perform Vibrational Mode ARD Decomposition analysis (default).
+ --novmard Don't perform Vibrational Mode ARD Decomposition analysis.
 
 Options:
- --linear     System is linear (3N-5 vibrational modes expected).
- --ts         System is a transition state 
-              (first vibrational mode will be included as reaction coordinate).
- --mw         Use mass-weighted displacements (default).
- --rawd       Don't use mass-weighted displacements.
- --pure       Purify internal coordinates.
- --noouts     Don not generate out-of-plane internal coordinates
- --notors     Don not generate torsion internal coordinates
- --autosel    Automatic selection of internal coordinates.  
- --allic      Don't purify internal coordinates (default)
- --cut XX     Set the cutoff for presenting contributions:
-              'auto' - Automatic selection (default)
-              'all'  - All contributions are listed.
-              'd9'   - Always lists the top 90% most important contributions
-              'q1'   - Always lists the top 25% most important contributions
-              X      - List only contributions above X%
- --delta f.ff Use this value for the discrete computation of S.
- --tol XX     Tolerance (in %) for determination of atomic connectivity.
- --input XX   Input format:
-              'hess'   - Orca .hess file (default).
-              'g09'    - Gaussian09 output (log) file.
- --vm XX      Animate vibrational mode XX 
- --ic XX      Animate internal coordinate XX 
+ --linear         System is linear (3N-5 vibrational modes expected).
+ --ts             System is a transition state 
+                  (first vibrational mode included as reaction coordinate).
+ --mwd            Use mass-weighted vibrational displacements (default).
+ --nomwd          Don't use mass-weighted vibrational displacements.
+ --mws            Use mass-weighted internal coordinate displacements.
+ --nomws          Don't use mass-weighted internal coordinate displacements (default).
+ --noouts         Don not generate out-of-plane internal coordinates
+ --notors         Don not generate torsion internal coordinates
+ --strictplanes   Restrict out-of-plane bending to co-planar atoms (default)
+ --nostrictplanes Out-of-plane coordinates generated for all eligible 4 atom sets
+ --ooptol f.ff    Tolerance (in degrees) for --strictplanes.
+ --autosel        Automatic selection of internal coordinates.
+ --addic FILE     Read additional or user-defined internal coordinates from
+                  file FILE.
+ --cut XX         Set the cutoff for presenting contributions:
+                  'auto' - Automatic selection (default)
+                  'all'  - All contributions are listed.
+                  'd9'   - Always lists the top 90% most important contributions
+                  'q1'   - Always lists the top 25% most important contributions
+                  X      - List only contributions with relative weight above X%
+ --delta f.ff     Use this value for the discete computation of S.
+ --tol XX         Tolerance (in %) for determination of atomic connectivity.
+ --input XX       Input format, and their expected sufixes:
+                  'hess'      - Orca .hess file (default).
+                  'g09'       - Gaussian09 output (log) file.
+                  'mopac'     - MOPAC 2016 output (out) file.
+                  'mopac2016' - MOPAC 2016 output (out) file.
+ --vm XX          Animate vibrational mode XX 
+ --ic XX          Animate internal coordinate XX 
+
+ Format for additional coordinates (--addic):
+ - Plain text file (extension is not relevant, but .ic is recommended)
+ - Lines Containing a hash (#) are ignored as comments
+ - One internal coordinate per line, as a tuple of characters and numbers:
+   - First Entry: B A O, or T, for bond, angle, out-of-plane or torsion, respectively
+	 - Following entries: the indexes of the atoms involved, starting with 1.
+   - For B, you must define 2 atoms
+   - For A, you must define 3 atoms, the second being the apex of the angle
+   - For B, you must define 4 atoms, the second being the central atom
+   - For B, you must define 4 atoms, the first and last being the extreme of the torsion
+  Examples:
+    B 1 2   -> Bond between atoms 1 and 2
+    A 1 4 3 -> Angle formed betweem 4-1 and 4-3
+
 ```
 
 ### Basic Usage
