@@ -1064,8 +1064,8 @@ Options:
 	 - Following entries: the indexes of the atoms involved, starting with 1.
    - For B, you must define 2 atoms
    - For A, you must define 3 atoms, the second being the apex of the angle
-   - For B, you must define 4 atoms, the second being the central atom
-   - For B, you must define 4 atoms, the first and last being the extreme of the torsion
+   - For O, you must define 4 atoms, the second being the central atom
+   - For T, you must define 4 atoms, the first and last being the extreme of the torsion
   Examples:
     B 1 2   -> Bond between atoms 1 and 2
     A 1 4 3 -> Angle formed betweem 4-1 and 4-3
