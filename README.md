@@ -146,18 +146,35 @@ animated using the --ic option, for example:
 ```
 
 will punch the animation along internal coordinates 11 and 12 onto files
-acoh-hess.i011.xyz and acoh-hess.i012.xyz, respectively. These files can be
-used to inspect the displacement along each internal coordinate, or can be used
-to perform Potential Energy Surface (PES) scans for the parametrisation of
+acoh-hess.i011.xyz and acoh-hess.i012.xyz, respectively. These files can be used
+to inspect the displacement along each internal coordinate, or can be used to
+perform Potential Energy Surface (PES) scans for the parametrisation of
 molecular force fields.
 
 ## How to Cite
-A paper describing the Vibrational Mode Decomposition paradigm and the three
-"flavours" available in **vibAnalysis** is currently undergoing the submission
-process to a peer-reviewed journal. While this paper is not published, and you
-wish to publish your work using **vibAnalysis**, please please put a reference to
-this gitHub repository. The following BibTeX entry should provide you with all
-the needed information:
+The VMARD method is described in _J. Chem. Theory Comput_, **2019**, _15_(1),
+456-470. If you wish to publish your work using **vibAnalysis**, please please
+cite the above paper, using the following BibTeX entry:
+
+```bibtex
+@Article{Teixeira2018VMARD,
+  author    = {Filipe Teixeira and M. Nat{\'{a}}lia D. S. Cordeiro},
+  title     = {Improving Vibrational Mode Interpretation Using Bayesian Regression},
+  journal   = {J. Chem. Theory Comput.},
+  year      = {2019},
+  volume    = {15},
+  number    = {1},
+  pages     = {456--470},
+  month     = {dec},
+  doi       = {10.1021/acs.jctc.8b00439},
+  publisher = {American Chemical Society ({ACS})}
+}
+
+```
+
+In addition to this, you may also want to put a reference to this gitHub
+repository, as the code evolves and new implementation features are added. The
+following BibTeX entry should provide you with all the needed information:
 
 ```bibtex
 @Electronic{TeixeiraVibAnal,
