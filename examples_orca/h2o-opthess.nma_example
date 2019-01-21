@@ -1,0 +1,64 @@
+###############################################################
+#                                                             #
+#   vibAnalysis - version 1.20 beta                           #
+#   A set of tools to analyse vibrational modes in terms of   #
+#   localized internal coordinates.                           #
+#                                                             #
+#   (c) Filipe Teixeira, 2017                                 #
+#   filipe _dot_ teixeira _at_ fc _dot_ up _dot_ pt           #
+#                                                             #
+###############################################################
+
+Opening Hess file: h2o-opthess.hess
+
+
+Mass-weighting the atomic displacements...
+
+
+Generating Internal Coordinates...
+Internal Coordinates Generated: 3
+
+This is the list of Internal Coordinates generated for
+this run. Please use these indexes if you whish to animate
+any one of these coordinates. If you added some user-defined
+coordinates, please be sure to re-run this program with the
+same added coordinates.
+
+
+List of Internal Coordinates and their values
+    1 BOND O1 H2                   0.967
+    2 BOND O1 H3                   0.967
+    3 ANGLE H2 O1 H3             103.120
+
+
+Starting: Vibrational Mode Automatic Relevance Determination
+
+Ending: Vibrational Mode Automatic Relevance Determination
+
+
+*** Vibrational Mode Automatic Relevance Determination (VMARD) ***
+
+Mode   1:  3883.75 cm-1 (IR:  26.2)
+  +0.6751 ( 50.5%) BOND O1 H3
+  -0.6621 ( 49.5%) BOND O1 H2
+ Shown Composition:  100.0% BOND,   0.0% ANGLE,   0.0% OUT,   0.0% TOR
+ Total Composition:  100.0% BOND,   0.0% ANGLE,   0.0% OUT,   0.0% TOR
+ R**2 = 1.0000
+ Explained Variance = 100.0 %
+
+Mode   2:  3787.96 cm-1 (IR:   4.6)
+  +0.7577 ( 50.5%) BOND O1 H2
+  +0.7427 ( 49.5%) BOND O1 H3
+ Shown Composition:  100.0% BOND,   0.0% ANGLE,   0.0% OUT,   0.0% TOR
+ Total Composition:  100.0% BOND,   0.0% ANGLE,   0.0% OUT,   0.0% TOR
+ R**2 = 0.9951
+ Explained Variance =  99.5 %
+
+Mode   3:  1638.46 cm-1 (IR:  55.5)
+  -0.9999 (100.0%) ANGLE H2 O1 H3
+ Shown Composition:    0.0% BOND, 100.0% ANGLE,   0.0% OUT,   0.0% TOR
+ Total Composition:    0.0% BOND, 100.0% ANGLE,   0.0% OUT,   0.0% TOR
+ R**2 = 0.9999
+ Explained Variance = 100.0 %
+
+*** End of Vibrational Mode Automatic Relevance Determination (VMARD) ***

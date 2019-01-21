@@ -1,0 +1,18 @@
+#needfile r01-exo-3s-ts-guess.xyz
+! X3LYP Def2-TZVP RIJCOSX VeryTightSCF SlowConv Grid5 FinalGrid6
+! OptTS NumFreq xyzfile 
+
+%pal nprocs 8 end
+
+%geom
+ Calc_Hess true
+ Trust -0.2
+end
+
+%output
+  print[p_mos] 1
+  print[p_Basis] 2
+ end
+
+*xyzfile 1 1 r01-exo-3s-ts-guess.xyz
+

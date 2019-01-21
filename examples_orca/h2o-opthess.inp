@@ -1,0 +1,9 @@
+! PAL4 B3LYP Def2-SVP Opt Freq
+
+#Water optimisation and frequency analysis
+
+*int 0 1
+O 0 0 0 0.0    0.0 0.0
+H 1 0 0 0.95   0.0 0.0
+H 1 2 0 0.95 104.0 0.0
+*
