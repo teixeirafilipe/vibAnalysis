@@ -14,6 +14,7 @@
 
 import numpy as np
 import sys
+import logging
 import sklearn.linear_model as sklm
 import sklearn.metrics as skmt
 
@@ -73,6 +74,11 @@ class Atom():
 		if(mass==None):
 			mass=Masses[Symbols.index(symbol.lower())]
 		self.r=np.array(r)
+	def punch(self):
+		o="{self.symbol:2s} {self.mass:8.4f}".format(self=self)
+		for i in range(3):
+			o += " %+16.4f"%(self.r[i])
+		return(o)
 
 class Vibration():
 	def __init__(self,freq,ndegs,adv=[],ir=None,raman=None,sym=''):
@@ -142,6 +148,13 @@ class System():
 		self.intcoords=[]
 		self.S=np.array([])
 		self.ADM=None
+	def punch(self):
+		o="System Data:\n"
+		o += ("Number of atoms = {self.natoms}\n".format(self=self))
+		o += "\nAtoms, Masses and Positions:\n"
+		for a in self.atoms:
+			o += "{}\n".format(a.punch())
+		return(o)
 	def addAtom(self,symbol,pos,mass=None):
 		self.atoms.append(Atom(symbol,pos,mass))
 		self.natoms = len(self.atoms)
@@ -280,6 +293,7 @@ def readMopac2016(ifn):
 	# assemble output System
 	putir=True
 	if(len(tir)!=len(tfreq)):
+		#logging.warning("IR intensities nor found.")
 		print("Warnning: Could not read IR intensities.")
 		putir=False
 	for i  in range(len(tfreq)):
@@ -382,6 +396,7 @@ def readG09log(ifn):
 	Depending on Linear and Transition, freqs and modes will be
 	pruned out of the translational and rotational components."""
 	o=System()
+	logging.info("Opening Gaussian log file: {:s}".format(ifn))
 	f=open(ifn,'r')
 	data=f.readlines()
 	f.close()
@@ -389,7 +404,8 @@ def readG09log(ifn):
 	natoms=-1
 	for i in range(len(data)):
 		if('NAtoms=' in data[i]):
-			natoms=int(data[i][8:14])
+			natoms=int(data[i].split()[1])
+			logging.info("Expecting {} atoms from reading line {}".format(natoms,i+1))
 			break
 	symbols=[]
 	mass=np.zeros(natoms)
@@ -465,7 +481,8 @@ def readG09log(ifn):
 		print("Warnning: IR intensities not found.")
 		irInt=np.zeros(len(freqs))
 	if(len(raInt)==0):
-		print("Warnning: Raman intensities not found.")
+		logging.warning("Could not find Raman Intensities.")
+		#print("Warnning: Raman intensities not found.")
 		raInt=np.zeros(len(freqs))
 	# send information to System:
 	for n in range(len(freqs)):
@@ -1076,6 +1093,7 @@ Options:
 	n=0
 	inic=False
 	invm=False
+	debug=False
 	ofn='va.out'
 	useric=[]
 	while(n<len(arg)):
@@ -1095,6 +1113,8 @@ Options:
 			inic=False
 			invm=False
 			Opts['doMWD']=False
+		elif(arg[n]=='--debug'):
+			debug=True
 		elif(arg[n]=='--mws'):
 			inic=False
 			invm=False
@@ -1221,6 +1241,13 @@ Options:
 		ofn=ifn[:-4]
 	if(Opts['input']=='MOPAC2016'):
 		ofn=ifn[:-4]
+	if(debug):
+		logging.basicConfig(filename=ofn+'.debug',
+		                    filemode='w',
+												format="%(levelname)s:%(funcName)s: %(message)s",
+												level=logging.DEBUG)
+	else:
+		logging.basicConfig(level=logging.WARNING,format="%(levelname)s:%(funcName)s: %(message)s")
 	of=open(ofn+'.nma','w')
 	of.write("""###############################################################
 #                                                             #
@@ -1242,6 +1269,7 @@ Options:
 	elif(Opts['input']=='MOPAC2016'):
 		of.write("\nOpening MOPAC 2016 output file: %s\n\n"%(ifn))
 		system=readMopac2016(ifn)
+	logging.debug(system.punch())
 	## If MW, mass-weight the normal modes
 	# Orca's hess is not mass-weighted, but normalized
 	# Gaussian's log is not mass-weighted, but normalized
