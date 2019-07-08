@@ -3,7 +3,7 @@
 
 ##########################################################################
 #                                                                        #
-# Program: va.py   Version 1.2              Date: 05/07/2018             #
+# Program: va.py   Version 1.2.1            Date: 05/07/2018             #
 #                                                                        #
 # A varied set of tools to analyse vibrational modes in terms of         #
 # localized internal coordinates.                                        #
@@ -1251,11 +1251,11 @@ Options:
 	of=open(ofn+'.nma','w')
 	of.write("""###############################################################
 #                                                             #
-#   vibAnalysis - version 1.20 beta                           #
+#   vibAnalysis - version 1.2.1                               #
 #   A set of tools to analyse vibrational modes in terms of   #
 #   localized internal coordinates.                           #
 #                                                             #
-#   (c) Filipe Teixeira, 2017                                 #
+#   (c) Filipe Teixeira, 2017-2019                            #
 #   filipe _dot_ teixeira _at_ fc _dot_ up _dot_ pt           #
 #                                                             #
 ###############################################################\n""")
