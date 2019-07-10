@@ -3,12 +3,12 @@
 
 ##########################################################################
 #                                                                        #
-# Program: va.py   Version 1.2.1            Date: 05/07/2018             #
+# Program: va.py   Version 1.2.2            Date: 18/07/2019             #
 #                                                                        #
 # A varied set of tools to analyse vibrational modes in terms of         #
 # localized internal coordinates.                                        #
 #                                                                        #
-# (c) Filipe Teixeira, 2017                                              #
+# (c) Filipe Teixeira, 2017-2019                                         #
 #                                                                        #
 ##########################################################################
 
@@ -647,9 +647,18 @@ def angleAmp(geo,al,deg=False):
 	the atoms in al, with al[1] being the apex (numbering starts at 0)."""
 	r01=geo[al[0]]-geo[al[1]]
 	r21=geo[al[2]]-geo[al[1]]
+	logging.debug("""Vectors for angle {}, {} and {}:
+	R01 = {} (norm: {})
+	R21 = {} (norm: {})
+	R01 (dot) R02 = {}""".format(al[0]+1,al[1]+1,al[2]+1,r01,np.linalg.norm(r01),r21,np.linalg.norm(r21),np.dot(r01,r21)))
 	r01=r01/np.linalg.norm(r01)
 	r21=r21/np.linalg.norm(r21)
-	phi=np.arccos(np.dot(r01,r21))
+	logging.debug("""Normalized vectors for angle {}, {} and {}:
+	R01 = {} (norm: {})
+	R21 = {} (norm: {})
+	R01 (dot) R02 = {}""".format(al[0]+1,al[1]+1,al[2]+1,r01,np.linalg.norm(r01),r21,np.linalg.norm(r21),np.dot(r01,r21)))
+	phi=np.arccos(np.round(np.dot(r01,r21),decimals=12))
+	logging.info("Angle between atoms {}, {} and {} = {:7.2f} degs.\n".format(al[0]+1,al[1]+1,al[2]+1,np.rad2deg(phi)))
 	if(deg):
 		phi=np.rad2deg(phi)
 	return phi
@@ -666,6 +675,19 @@ def oopAmp(geo,al,deg=False):
 	n1=np.cross(r1,r2)
 	n2=np.cross(r3,r2)
 	atmp=np.dot(n1,n2)/(np.linalg.norm(n1)*np.linalg.norm(n2))
+	logging.debug("""Normalized vectors for OOP angle {}, {}, {} and {}:
+	R1 = {} (norm: {})
+	R2 = {} (norm: {})
+	R3 = {} (norm: {})
+	N1 = {} (norm: {})
+	N2 = {} (norm: {})
+	N1 (dot) N2 = {}""".format(al[0]+1,al[2]+1,al[3]+1,al[1]+1,
+	r1,np.linalg.norm(r1),
+	r2,np.linalg.norm(r2),
+	r3,np.linalg.norm(r3),
+	n1,np.linalg.norm(n1),
+	n2,np.linalg.norm(n2),
+	np.dot(n1,n2)))
 	if(atmp>1.0):
 		phi=np.arccos(1.0)
 	elif(atmp<-1.0):
@@ -679,6 +701,8 @@ def oopAmp(geo,al,deg=False):
 	nc=np.cross(n1p,n2p)
 	if(np.dot(nc,r1)>0.0):
 		phi = (2.0*np.pi)-phi
+	logging.info("""Amplitude for OOP angle {}, {}, {} and {}: {:+7.2f} degs.
+	""".format(al[0]+1,al[2]+1,al[3]+1,al[1]+1, np.rad2deg(phi)))
 	if(deg):
 		phi=np.rad2deg(phi)
 	return phi
@@ -813,13 +837,17 @@ def makeIC(o,useric=[]):
 					a3=tmplst[1]
 					a4=tmplst[2]
 					if(Opts['doOuts']):
-						if(Opts['oopp']):
-							teta=oopAmp(geo,[a1,a2,a3,a4])
-							if((np.abs(teta-np.pi)<Opts['oopTol'])and([a1,a2,a3,a4] not in loop)):
-								loop.append([a1,a2,a3,a4])
-						else:
-							if([a1,a2,a3,a4] not in loop):
-								loop.append([a1,a2,a3,a4])
+						#check if none of the involved angles are 180
+						if((angleAmp(geo,[a1,a2,a3],True)<179.0)and
+						   (angleAmp(geo,[a1,a2,a4],True)<179.0)and
+							 (angleAmp(geo,[a3,a2,a4],True)<179.0)):
+							if(Opts['oopp']):
+								teta=oopAmp(geo,[a1,a2,a3,a4])
+								if((np.abs(teta-np.pi)<Opts['oopTol'])and([a1,a2,a3,a4] not in loop)):
+									loop.append([a1,a2,a3,a4])
+							else:
+								if([a1,a2,a3,a4] not in loop):
+									loop.append([a1,a2,a3,a4])
 				# now the torsions...
 				else:
 					candidate=[]
@@ -1251,7 +1279,7 @@ Options:
 	of=open(ofn+'.nma','w')
 	of.write("""###############################################################
 #                                                             #
-#   vibAnalysis - version 1.2.1                               #
+#   vibAnalysis - version 1.2.2                               #
 #   A set of tools to analyse vibrational modes in terms of   #
 #   localized internal coordinates.                           #
 #                                                             #
