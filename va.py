@@ -1004,7 +1004,7 @@ def VMLD(of,s):
 		of.write(" some (possibly unwanted) redundancy in the results\n")
 	for i in range(len(s.vibrations)):
 		o=[]
-		regressor=sklm.LinearRegression()
+		regressor=sklm.LinearRegression(fit_intercept=False)
 		regressor.fit(s.S,s.ADM[:,i])
 		r2=np.corrcoef(s.ADM[:,i],regressor.predict(s.S))[0,1]**2
 		exvar=skmt.explained_variance_score(s.ADM[:,i],regressor.predict(s.S))
@@ -1024,7 +1024,9 @@ def VMBLD(of,s):
 		of.write(" some (possibly unwanted) redundancy in the results\n")
 	for i in range(len(s.vibrations)):
 		o=[]
-		regressor=sklm.BayesianRidge(compute_score=True,n_iter=5000)
+		# fit_intercept=False would make more sense but BayesianRidge
+		# performs extremely poor with it
+		regressor=sklm.BayesianRidge(compute_score=True,n_iter=5000,fit_intercept=True)
 		regressor.fit(s.S,s.ADM[:,i])
 		r2=np.corrcoef(s.ADM[:,i],regressor.predict(s.S))[0,1]**2
 		exvar=skmt.explained_variance_score(s.ADM[:,i],regressor.predict(s.S))
@@ -1044,7 +1046,7 @@ def VMARD(of,s):
 		of.write(" some (possibly unwanted) redundancy in the results\n")
 	for i in range(len(s.vibrations)):
 		o=[]
-		regressor=sklm.ARDRegression(compute_score=True,n_iter=5000)
+		regressor=sklm.ARDRegression(compute_score=True,n_iter=5000,fit_intercept=False)
 		regressor.fit(s.S,s.ADM[:,i])
 		r2=np.corrcoef(s.ADM[:,i],regressor.predict(s.S))[0,1]**2
 		exvar=skmt.explained_variance_score(s.ADM[:,i],regressor.predict(s.S))
